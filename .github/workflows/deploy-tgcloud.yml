@@ -1,0 +1,63 @@
+name: Deploy Telegram Broadcaster to tgcloud
+
+# Runs on GitHub runners (ubuntu-latest) because the local network cannot
+# reliably push directly to Telegram's tgcloud platform.
+on:
+  push:
+    paths:
+      - 'tgcloud/**'
+      - '.github/workflows/deploy-tgcloud.yml'
+  workflow_dispatch:
+
+env:
+  # All secrets are provided as GitHub repository Secrets and mapped below.
+  TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TARGET_TELEGRAM_CHANNEL_ID: ${{ secrets.TARGET_TELEGRAM_CHANNEL_ID }}
+  ALLOWED_TELEGRAM_USER_ID: ${{ secrets.ALLOWED_TELEGRAM_USER_ID }}
+  RELAY_URL: ${{ secrets.RELAY_URL }}
+  RELAY_PATH_PREFIX: ${{ secrets.RELAY_PATH_PREFIX }}
+  ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+  RETRY_ATTEMPTS: ${{ secrets.RETRY_ATTEMPTS || '3' }}
+  RETRY_DELAY: ${{ secrets.RETRY_DELAY || '1000' }}
+  TIMEOUT: ${{ secrets.TIMEOUT || '5000' }}
+  DEBUG_MODE: ${{ secrets.DEBUG_MODE || 'false' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check tgcloud + hub (Node.js)
+        run: |
+          node --check tgcloud/lib/config.js
+          node --check tgcloud/lib/relay.js
+          node --check tgcloud/lib/adapter.js
+          node --check tgcloud/handlers/message.js
+          node --check tgcloud/schema.js
+          node --check src/hub.js
+          echo "Syntax check passed"
+
+      - name: Install tgcloud CLI
+        run: npm install -g @tgcloud/cli || true
+
+      - name: Login to tgcloud
+        run: npx tgcloud login
+        env:
+          TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+
+      - name: Push code + schema to tgcloud
+        run: npx tgcloud push
+
+      - name: Apply database migrations
+        run: npx tgcloud migrate --yes
+
+      - name: Sync webhook + allowed_updates
+        run: npx tgcloud webhook sync

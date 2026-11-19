@@ -1,0 +1,11 @@
+{
+  // Telegram Serverless (tgcloud) project configuration.
+  // Phase 1: Telegram Channel broadcaster with extensible DestinationAdapter.
+  "name": "msg-broadcaster",
+  "version": "1.0.0",
+  "description": "Node.js Telegram Channel broadcaster via tgcloud + Cloudflare relay",
+  "runtime": "node",
+  "handlers": "tgcloud/handlers",
+  "lib": "tgcloud/lib",
+  "schema": "tgcloud/schema.js"
+}

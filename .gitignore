@@ -2,4 +2,7 @@
 .junie/
 .env
 node_modules/
+graphify-out/
+dist/
+.env.local
 
