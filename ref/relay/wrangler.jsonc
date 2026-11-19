@@ -1,0 +1,14 @@
+{
+  // Minimal Wrangler config. Fill variables here or (recommended for secrets) in the dashboard.
+  "name": "telegram-relay",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "vars": {
+    // "PATH_PREFIX": "change-me-random-string",
+    // "ALLOWED_BOT_IDS": "123456789",
+    // "UPSTREAM": "https://api.telegram.org",
+    // "WEBHOOK_ORIGIN": "https://your-server.example.com",
+    // "WEBHOOK_PATH": "_hook"
+  }
+  // WEBHOOK_SECRET should be added as a secret, not in this file.
+}
